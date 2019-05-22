@@ -21,7 +21,7 @@ CLASS lcl_dollar IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD times.
-    r_value = NEW #( amount * i_multiplier ).
+    r_value = NEW lcl_dollar( amount * i_multiplier ).
   ENDMETHOD.
 ENDCLASS.
 
