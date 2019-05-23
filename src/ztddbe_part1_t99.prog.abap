@@ -61,8 +61,7 @@ CLASS ltc_test_multycurrency_money DEFINITION
       test_multiplication FOR TESTING,
       test_equality FOR TESTING,
       test_franc_multiplication FOR TESTING,
-      test_currency FOR TESTING,
-      test_different_class_equality FOR TESTING.
+      test_currency FOR TESTING.
 ENDCLASS.
 
 CLASS ltc_test_multycurrency_money IMPLEMENTATION.
@@ -81,8 +80,6 @@ CLASS ltc_test_multycurrency_money IMPLEMENTATION.
   METHOD test_equality.
     cl_abap_unit_assert=>assert_true( lcl_money=>dollar( 5 )->equals( lcl_money=>dollar( 5 ) ) ).
     cl_abap_unit_assert=>assert_false( lcl_money=>dollar( 5 )->equals( lcl_money=>dollar( 6 ) ) ).
-    cl_abap_unit_assert=>assert_true( lcl_money=>franc( 5 )->equals( lcl_money=>franc( 5 ) ) ).
-    cl_abap_unit_assert=>assert_false( lcl_money=>franc( 5 )->equals( lcl_money=>franc( 6 ) ) ).
     cl_abap_unit_assert=>assert_false( lcl_money=>franc( 5 )->equals( lcl_money=>dollar( 5 ) ) ).
   ENDMETHOD.
 
@@ -97,9 +94,5 @@ CLASS ltc_test_multycurrency_money IMPLEMENTATION.
   METHOD test_currency.
     cl_abap_unit_assert=>assert_equals( exp = 'USD' act = lcl_money=>dollar( 1 )->get_currency( ) ).
     cl_abap_unit_assert=>assert_equals( exp = 'CHF' act = lcl_money=>franc( 1 )->get_currency( ) ).
-  ENDMETHOD.
-
-  METHOD test_different_class_equality.
-    assert_equals( i_exp = NEW lcl_money( i_amount = 10 i_currency = `CHF` ) i_act = NEW lcl_franc( i_amount = 10 i_currency = `CHF` ) ).
   ENDMETHOD.
 ENDCLASS.
