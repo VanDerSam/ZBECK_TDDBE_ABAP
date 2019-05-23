@@ -1,27 +1,58 @@
 REPORT ztddbe_part1.
 
-CLASS lcl_dollar DEFINITION.
+CLASS lcl_object DEFINITION.
   PUBLIC SECTION.
-    DATA: amount TYPE i.
+    METHODS:
+      hash_code
+        RETURNING VALUE(r_code) TYPE i,
 
+      to_string
+        RETURNING VALUE(r_str) TYPE string,
+
+      equals
+        IMPORTING i_obj           TYPE REF TO lcl_object
+        RETURNING VALUE(r_result) TYPE abap_bool.
+ENDCLASS.
+
+CLASS lcl_object IMPLEMENTATION.
+  METHOD hash_code.
+    " See additional info there - https://stackoverflow.com/questions/20383307/getting-an-abap-objects-identity-number
+    CALL 'OBJMGR_GET_INFO' ID 'OPNAME' FIELD 'GET_OBJID'
+                           ID 'OBJID'  FIELD r_code
+                           ID 'OBJ'    FIELD me.
+  ENDMETHOD.
+
+  METHOD to_string.
+    DATA: class_descr TYPE REF TO cl_abap_classdescr.
+    class_descr ?= cl_abap_classdescr=>describe_by_object_ref( me ).
+    r_str = |{ class_descr->absolute_name }@{ me->hash_code( ) }|.
+  ENDMETHOD.
+
+  METHOD equals.
+    r_result = boolc( me = i_obj ).
+  ENDMETHOD.
+ENDCLASS.
+
+CLASS lcl_dollar DEFINITION
+      INHERITING FROM lcl_object.
+  PUBLIC SECTION.
     METHODS:
       constructor
         IMPORTING
           i_amount TYPE i,
-      times
-        IMPORTING
-          i_multiplier   TYPE i
-        RETURNING
-          VALUE(r_value) TYPE REF TO lcl_dollar,
 
-      equals
-        IMPORTING
-                  i_object            TYPE REF TO object
-        RETURNING VALUE(r_cmp_result) TYPE abap_bool.
+      times IMPORTING i_multiplier   TYPE i
+            RETURNING VALUE(r_value) TYPE REF TO lcl_dollar,
+
+      equals REDEFINITION.
+
+  PRIVATE SECTION.
+    DATA: amount TYPE i.
 ENDCLASS.
 
 CLASS lcl_dollar IMPLEMENTATION.
   METHOD constructor.
+    super->constructor( ).
     amount = i_amount.
   ENDMETHOD.
 
@@ -31,9 +62,9 @@ CLASS lcl_dollar IMPLEMENTATION.
 
   METHOD equals.
     DATA: dollar TYPE REF TO lcl_dollar.
-    dollar ?= i_object.
+    dollar ?= i_obj.
     IF ( me->amount = dollar->amount ).
-      r_cmp_result = abap_true.
+      r_result = abap_true.
     ENDIF.
   ENDMETHOD.
 ENDCLASS.
