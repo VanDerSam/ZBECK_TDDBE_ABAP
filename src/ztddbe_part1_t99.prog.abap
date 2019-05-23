@@ -65,7 +65,9 @@ CLASS ltc_test_multycurrency_money DEFINITION
       test_simple_addition FOR TESTING,
       test_plus_returs_sum FOR TESTING,
       test_reduce_sum FOR TESTING,
-      test_reduce_money FOR TESTING.
+      test_reduce_money FOR TESTING,
+      test_reduce_money_diff_curr FOR TESTING,
+      test_identity_rate FOR TESTING.
 ENDCLASS.
 
 CLASS ltc_test_multycurrency_money IMPLEMENTATION.
@@ -143,5 +145,19 @@ CLASS ltc_test_multycurrency_money IMPLEMENTATION.
     bank = NEW lcl_bank( ).
     result = bank->reduce( i_source = lcl_money=>dollar( 1 ) i_to = `USD` ).
     assert_equals( i_exp = lcl_money=>dollar( 1 ) i_act = result ).
+  ENDMETHOD.
+
+  METHOD test_reduce_money_diff_curr.
+    DATA: bank   TYPE REF TO lcl_bank,
+          result TYPE REF TO lcl_money.
+
+    bank = NEW lcl_bank( ).
+    bank->add_rate( i_from = `CHF` i_to = `USD` i_rate = 2 ).
+    result = bank->reduce( i_source = lcl_money=>franc( 2 ) i_to = `USD` ).
+    assert_equals( i_exp = lcl_money=>dollar( 1 ) i_act = result ).
+  ENDMETHOD.
+
+  METHOD test_identity_rate.
+    cl_abap_unit_assert=>assert_equals( exp = 1 act = NEW lcl_bank( )->rate( i_from = `USD` i_to = `USD` ) ).
   ENDMETHOD.
 ENDCLASS.

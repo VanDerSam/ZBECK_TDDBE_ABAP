@@ -41,10 +41,12 @@ CLASS lcl_object IMPLEMENTATION.
 ENDCLASS.
 
 CLASS lcl_money DEFINITION DEFERRED.
+CLASS lcl_bank DEFINITION DEFERRED.
 
 INTERFACE lif_expression.
   METHODS:
-    reduce IMPORTING i_to           TYPE string
+    reduce IMPORTING i_bank         TYPE REF TO lcl_bank
+                     i_to           TYPE string
            RETURNING VALUE(r_value) TYPE REF TO lcl_money.
 ENDINTERFACE.
 
@@ -118,7 +120,27 @@ CLASS lcl_bank DEFINITION.
     METHODS:
       reduce IMPORTING i_source       TYPE REF TO lif_expression
                        i_to           TYPE string
-             RETURNING VALUE(r_value) TYPE REF TO lcl_money.
+             RETURNING VALUE(r_value) TYPE REF TO lcl_money,
+
+      rate IMPORTING i_from        TYPE string
+                     i_to          TYPE string
+           RETURNING VALUE(r_rate) TYPE i,
+
+      add_rate IMPORTING i_from TYPE string
+                         i_to   TYPE string
+                         i_rate TYPE i.
+
+  PRIVATE SECTION.
+    TYPES: BEGIN OF pair_t,
+             from TYPE string,
+             to   TYPE string,
+           END OF   pair_t,
+           BEGIN OF ref_table_t,
+             key   TYPE pair_t,
+             value TYPE i,
+           END OF   ref_table_t.
+    " Java code uses OO data structure but in ABAP we use nonOO data structure.
+    DATA: rates TYPE HASHED TABLE OF ref_table_t WITH UNIQUE KEY key.
 ENDCLASS.
 
 CLASS lcl_money IMPLEMENTATION.
@@ -162,24 +184,31 @@ CLASS lcl_money IMPLEMENTATION.
 
   METHOD lif_expression~reduce.
     r_value = me.
+    DATA: rate TYPE i.
+
+    rate = i_bank->rate( i_from = currency i_to = i_to ).
+    r_value = NEW lcl_money( i_amount = amount / rate i_currency = i_to ).
   ENDMETHOD.
 ENDCLASS.
 
 CLASS lcl_bank IMPLEMENTATION.
   METHOD reduce.
-    " intermediate solution
-*    DATA: sum         TYPE REF TO lcl_sum,
-*          base_object TYPE REF TO lcl_object.
-*
-*    " Java's "instanceof" statement is simulated through ABAP reflection.
-*    base_object ?= i_source.
-*    IF ( base_object->get_class( )->absolute_name CS `LCL_MONEY` ).
-*      r_value ?= i_source->reduce( i_to ).
-*      RETURN.
-*    ENDIF.
-*    sum ?= i_source.
-*    r_value = sum->reduce( i_to ).
-    r_value = i_source->reduce( i_to ).
+    r_value = i_source->reduce( i_bank = me i_to = i_to ).
+  ENDMETHOD.
+
+  METHOD rate.
+    IF ( i_from = i_to ).
+      r_rate = 1.
+      RETURN.
+    ENDIF.
+    READ TABLE rates WITH TABLE KEY key = VALUE #( from = i_from to = i_to ) ASSIGNING FIELD-SYMBOL(<rate>).
+    IF ( sy-subrc = 0 ).
+      r_rate = <rate>-value.
+    ENDIF.
+  ENDMETHOD.
+
+  METHOD add_rate.
+    INSERT VALUE #( key = VALUE #( from = i_from to = i_to ) value = i_rate ) INTO TABLE rates.
   ENDMETHOD.
 ENDCLASS.
 
