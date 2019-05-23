@@ -40,23 +40,19 @@ CLASS lcl_object IMPLEMENTATION.
   ENDMETHOD.
 ENDCLASS.
 
-INTERFACE lif_expression.
-ENDINTERFACE.
-
 CLASS lcl_money DEFINITION DEFERRED.
 
-CLASS lcl_bank DEFINITION.
-  PUBLIC SECTION.
-    METHODS:
-      reduce IMPORTING i_source       TYPE REF TO lif_expression
-                       i_to           TYPE string
-             RETURNING VALUE(r_value) TYPE REF TO lcl_money.
-ENDCLASS.
+INTERFACE lif_expression.
+  METHODS:
+    reduce IMPORTING i_to           TYPE string
+           RETURNING VALUE(r_value) TYPE REF TO lcl_money.
+ENDINTERFACE.
 
 CLASS lcl_money DEFINITION
       INHERITING FROM lcl_object.
   PUBLIC SECTION.
     INTERFACES: lif_expression.
+    ALIASES: reduce FOR lif_expression~reduce.
 
     CLASS-METHODS:
       dollar IMPORTING i_amount       TYPE i
@@ -79,11 +75,50 @@ CLASS lcl_money DEFINITION
         RETURNING VALUE(r_currency) TYPE string,
 
       plus IMPORTING i_addend       TYPE REF TO lcl_money
-           RETURNING VALUE(r_value) TYPE REF TO lif_expression.
+           RETURNING VALUE(r_value) TYPE REF TO lif_expression,
+
+      get_amount RETURNING VALUE(r_amount) TYPE i.
 
   PROTECTED SECTION.
     DATA: amount   TYPE i,
           currency TYPE string.
+ENDCLASS.
+
+CLASS lcl_sum DEFINITION
+      INHERITING FROM lcl_object.
+  PUBLIC SECTION.
+    DATA: augend TYPE REF TO lcl_money,
+          addend TYPE REF TO lcl_money.
+
+    INTERFACES: lif_expression.
+    ALIASES: reduce FOR lif_expression~reduce.
+
+    METHODS:
+      constructor IMPORTING i_augend TYPE REF TO lcl_money
+                            i_addend TYPE REF TO lcl_money.
+ENDCLASS.
+
+CLASS lcl_sum IMPLEMENTATION.
+  METHOD constructor.
+    super->constructor( ).
+    augend = i_augend.
+    addend = i_addend.
+  ENDMETHOD.
+
+  METHOD lif_expression~reduce.
+    DATA: amount TYPE i.
+
+    amount = augend->get_amount( ) + addend->get_amount( ).
+    r_value = NEW lcl_money( i_amount = amount i_currency = i_to ).
+  ENDMETHOD.
+ENDCLASS.
+
+CLASS lcl_bank DEFINITION.
+  PUBLIC SECTION.
+    METHODS:
+      reduce IMPORTING i_source       TYPE REF TO lif_expression
+                       i_to           TYPE string
+             RETURNING VALUE(r_value) TYPE REF TO lcl_money.
 ENDCLASS.
 
 CLASS lcl_money IMPLEMENTATION.
@@ -118,13 +153,33 @@ CLASS lcl_money IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD plus.
-    r_value = NEW lcl_money( i_amount = amount + i_addend->amount i_currency = currency ).
+    r_value = NEW lcl_sum( i_augend = me i_addend = i_addend ).
+  ENDMETHOD.
+
+  METHOD get_amount.
+    r_amount = amount.
+  ENDMETHOD.
+
+  METHOD lif_expression~reduce.
+    r_value = me.
   ENDMETHOD.
 ENDCLASS.
 
 CLASS lcl_bank IMPLEMENTATION.
   METHOD reduce.
-    r_value = lcl_money=>dollar( 10 ).
+    " intermediate solution
+*    DATA: sum         TYPE REF TO lcl_sum,
+*          base_object TYPE REF TO lcl_object.
+*
+*    " Java's "instanceof" statement is simulated through ABAP reflection.
+*    base_object ?= i_source.
+*    IF ( base_object->get_class( )->absolute_name CS `LCL_MONEY` ).
+*      r_value ?= i_source->reduce( i_to ).
+*      RETURN.
+*    ENDIF.
+*    sum ?= i_source.
+*    r_value = sum->reduce( i_to ).
+    r_value = i_source->reduce( i_to ).
   ENDMETHOD.
 ENDCLASS.
 

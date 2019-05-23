@@ -62,7 +62,10 @@ CLASS ltc_test_multycurrency_money DEFINITION
       test_equality FOR TESTING,
       test_franc_multiplication FOR TESTING,
       test_currency FOR TESTING,
-      test_simple_addition FOR TESTING.
+      test_simple_addition FOR TESTING,
+      test_plus_returs_sum FOR TESTING,
+      test_reduce_sum FOR TESTING,
+      test_reduce_money FOR TESTING.
 ENDCLASS.
 
 CLASS ltc_test_multycurrency_money IMPLEMENTATION.
@@ -108,5 +111,37 @@ CLASS ltc_test_multycurrency_money IMPLEMENTATION.
     bank = NEW lcl_bank( ).
     reduced = bank->reduce( i_source = sum i_to = `USD` ).
     assert_equals( i_exp = lcl_money=>dollar( 10 ) i_act = reduced ).
+  ENDMETHOD.
+
+  METHOD test_plus_returs_sum.
+    DATA: five   TYPE REF TO lcl_money,
+          result TYPE REF TO lif_expression,
+          sum    TYPE REF TO lcl_sum.
+
+    five = lcl_money=>dollar( 5 ).
+    result = five->plus( five ).
+    sum ?= result.
+    assert_equals( i_exp = five i_act = sum->augend ).
+    assert_equals( i_exp = five i_act = sum->addend ).
+  ENDMETHOD.
+
+  METHOD test_reduce_sum.
+    DATA: sum    TYPE REF TO lif_expression,
+          bank   TYPE REF TO lcl_bank,
+          result TYPE REF TO lcl_money.
+
+    sum = NEW lcl_sum( i_augend = lcl_money=>dollar( 3 ) i_addend = lcl_money=>dollar( 4 ) ).
+    bank = NEW lcl_bank( ).
+    result = bank->reduce( i_source = sum i_to = `USD` ).
+    assert_equals( i_exp = lcl_money=>dollar( 7 ) i_act = result ).
+  ENDMETHOD.
+
+  METHOD test_reduce_money.
+    DATA: bank   TYPE REF TO lcl_bank,
+          result TYPE REF TO lcl_money.
+
+    bank = NEW lcl_bank( ).
+    result = bank->reduce( i_source = lcl_money=>dollar( 1 ) i_to = `USD` ).
+    assert_equals( i_exp = lcl_money=>dollar( 1 ) i_act = result ).
   ENDMETHOD.
 ENDCLASS.
