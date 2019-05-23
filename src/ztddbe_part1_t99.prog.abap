@@ -54,8 +54,8 @@ CLASS ltc_test_multycurrency_money DEFINITION
       FINAL.
   PRIVATE SECTION.
     METHODS:
-      assert_equals IMPORTING i_exp           TYPE REF TO lcl_object
-                              i_act           TYPE REF TO lcl_object
+      assert_equals IMPORTING i_exp           TYPE REF TO object
+                              i_act           TYPE REF TO object
                     RETURNING VALUE(r_result) TYPE abap_bool,
       ""
       test_multiplication FOR TESTING,
@@ -67,12 +67,17 @@ CLASS ltc_test_multycurrency_money DEFINITION
       test_reduce_sum FOR TESTING,
       test_reduce_money FOR TESTING,
       test_reduce_money_diff_curr FOR TESTING,
-      test_identity_rate FOR TESTING.
+      test_identity_rate FOR TESTING,
+      test_mixed_addition for testing.
 ENDCLASS.
 
 CLASS ltc_test_multycurrency_money IMPLEMENTATION.
   METHOD assert_equals.
-    cl_abap_unit_assert=>assert_true( i_exp->equals( i_act ) ).
+    data: obj1 type ref to lcl_object,
+          obj2 type ref to lcl_object.
+    obj1 ?= i_exp.
+    obj2 ?= i_act.
+    cl_abap_unit_assert=>assert_true( obj1->equals( obj2 ) ).
   ENDMETHOD.
 
   METHOD test_multiplication.
@@ -159,5 +164,19 @@ CLASS ltc_test_multycurrency_money IMPLEMENTATION.
 
   METHOD test_identity_rate.
     cl_abap_unit_assert=>assert_equals( exp = 1 act = NEW lcl_bank( )->rate( i_from = `USD` i_to = `USD` ) ).
+  ENDMETHOD.
+
+  METHOD test_mixed_addition.
+    data: five_bucks type ref to lif_expression,
+          ten_francs type ref to lif_expression,
+          bank       type ref to lcl_bank,
+          result     type ref to lcl_money.
+
+    five_bucks = lcl_money=>dollar( 5 ).
+    ten_francs = lcl_money=>franc( 10 ).
+    bank = new lcl_bank( ).
+    bank->add_rate( i_from = `CHF` i_to = `USD` i_rate = 2 ).
+    result = bank->reduce( i_source = five_bucks->plus( i_addend = ten_francs ) i_to = `USD` ).
+    assert_equals( i_exp = lcl_money=>dollar( 10 ) i_act = result ).
   ENDMETHOD.
 ENDCLASS.

@@ -47,14 +47,22 @@ INTERFACE lif_expression.
   METHODS:
     reduce IMPORTING i_bank         TYPE REF TO lcl_bank
                      i_to           TYPE string
-           RETURNING VALUE(r_value) TYPE REF TO lcl_money.
+           RETURNING VALUE(r_value) TYPE REF TO lcl_money,
+
+    times IMPORTING i_multiplier   TYPE i
+          RETURNING VALUE(r_value) TYPE REF TO lif_expression,
+
+    plus IMPORTING i_addend       TYPE REF TO lif_expression
+         RETURNING VALUE(r_value) TYPE REF TO lif_expression.
 ENDINTERFACE.
 
 CLASS lcl_money DEFINITION
       INHERITING FROM lcl_object.
   PUBLIC SECTION.
     INTERFACES: lif_expression.
-    ALIASES: reduce FOR lif_expression~reduce.
+    ALIASES: reduce FOR lif_expression~reduce,
+             times FOR lif_expression~times,
+             plus FOR lif_expression~plus.
 
     CLASS-METHODS:
       dollar IMPORTING i_amount       TYPE i
@@ -69,15 +77,8 @@ CLASS lcl_money DEFINITION
 
       equals REDEFINITION,
 
-      times
-        IMPORTING i_multiplier   TYPE i
-        RETURNING VALUE(r_value) TYPE REF TO lcl_money,
-
       get_currency
         RETURNING VALUE(r_currency) TYPE string,
-
-      plus IMPORTING i_addend       TYPE REF TO lcl_money
-           RETURNING VALUE(r_value) TYPE REF TO lif_expression,
 
       get_amount RETURNING VALUE(r_amount) TYPE i.
 
@@ -89,15 +90,17 @@ ENDCLASS.
 CLASS lcl_sum DEFINITION
       INHERITING FROM lcl_object.
   PUBLIC SECTION.
-    DATA: augend TYPE REF TO lcl_money,
-          addend TYPE REF TO lcl_money.
+    DATA: augend TYPE REF TO lif_expression,
+          addend TYPE REF TO lif_expression.
 
     INTERFACES: lif_expression.
-    ALIASES: reduce FOR lif_expression~reduce.
+    ALIASES: reduce FOR lif_expression~reduce,
+             times FOR lif_expression~times,
+             plus FOR lif_expression~plus.
 
     METHODS:
-      constructor IMPORTING i_augend TYPE REF TO lcl_money
-                            i_addend TYPE REF TO lcl_money.
+      constructor IMPORTING i_augend TYPE REF TO lif_expression
+                            i_addend TYPE REF TO lif_expression.
 ENDCLASS.
 
 CLASS lcl_sum IMPLEMENTATION.
@@ -110,8 +113,16 @@ CLASS lcl_sum IMPLEMENTATION.
   METHOD lif_expression~reduce.
     DATA: amount TYPE i.
 
-    amount = augend->get_amount( ) + addend->get_amount( ).
+    amount = augend->reduce( i_bank = i_bank i_to = i_to )->get_amount( ) + addend->reduce( i_bank = i_bank i_to = i_to )->get_amount( ).
     r_value = NEW lcl_money( i_amount = amount i_currency = i_to ).
+  ENDMETHOD.
+
+  METHOD lif_expression~plus.
+    CLEAR r_value.
+  ENDMETHOD.
+
+  METHOD lif_expression~times.
+    CLEAR r_value.
   ENDMETHOD.
 ENDCLASS.
 
@@ -170,11 +181,11 @@ CLASS lcl_money IMPLEMENTATION.
     r_currency = currency.
   ENDMETHOD.
 
-  METHOD times.
+  METHOD lif_expression~times.
     r_value = NEW lcl_money( i_amount = amount * i_multiplier i_currency = currency ).
   ENDMETHOD.
 
-  METHOD plus.
+  METHOD lif_expression~plus.
     r_value = NEW lcl_sum( i_augend = me i_addend = i_addend ).
   ENDMETHOD.
 
