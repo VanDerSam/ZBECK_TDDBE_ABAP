@@ -68,13 +68,15 @@ CLASS ltc_test_multycurrency_money DEFINITION
       test_reduce_money FOR TESTING,
       test_reduce_money_diff_curr FOR TESTING,
       test_identity_rate FOR TESTING,
-      test_mixed_addition for testing.
+      test_mixed_addition FOR TESTING,
+      test_sum_plus_money FOR TESTING,
+      test_sum_times FOR TESTING.
 ENDCLASS.
 
 CLASS ltc_test_multycurrency_money IMPLEMENTATION.
   METHOD assert_equals.
-    data: obj1 type ref to lcl_object,
-          obj2 type ref to lcl_object.
+    DATA: obj1 TYPE REF TO lcl_object,
+          obj2 TYPE REF TO lcl_object.
     obj1 ?= i_exp.
     obj2 ?= i_act.
     cl_abap_unit_assert=>assert_true( obj1->equals( obj2 ) ).
@@ -167,16 +169,48 @@ CLASS ltc_test_multycurrency_money IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD test_mixed_addition.
-    data: five_bucks type ref to lif_expression,
-          ten_francs type ref to lif_expression,
-          bank       type ref to lcl_bank,
-          result     type ref to lcl_money.
+    DATA: five_bucks TYPE REF TO lif_expression,
+          ten_francs TYPE REF TO lif_expression,
+          bank       TYPE REF TO lcl_bank,
+          result     TYPE REF TO lcl_money.
 
     five_bucks = lcl_money=>dollar( 5 ).
     ten_francs = lcl_money=>franc( 10 ).
-    bank = new lcl_bank( ).
+    bank = NEW lcl_bank( ).
     bank->add_rate( i_from = `CHF` i_to = `USD` i_rate = 2 ).
     result = bank->reduce( i_source = five_bucks->plus( i_addend = ten_francs ) i_to = `USD` ).
     assert_equals( i_exp = lcl_money=>dollar( 10 ) i_act = result ).
+  ENDMETHOD.
+
+  METHOD test_sum_plus_money.
+    DATA: five_bucks TYPE REF TO lif_expression,
+          ten_francs TYPE REF TO lif_expression,
+          bank       TYPE REF TO lcl_bank,
+          result     TYPE REF TO lcl_money,
+          sum        TYPE REF TO lif_expression.
+
+    five_bucks = lcl_money=>dollar( 5 ).
+    ten_francs = lcl_money=>franc( 10 ).
+    bank = NEW lcl_bank( ).
+    bank->add_rate( i_from = `CHF` i_to = `USD` i_rate = 2 ).
+    sum = NEW lcl_sum( i_augend = five_bucks i_addend = ten_francs )->plus( five_bucks ).
+    result = bank->reduce( i_source = sum i_to = `USD` ).
+    assert_equals( i_exp = lcl_money=>dollar( 15 ) i_act = result ).
+  ENDMETHOD.
+
+  METHOD test_sum_times.
+    DATA: five_bucks TYPE REF TO lif_expression,
+          ten_francs TYPE REF TO lif_expression,
+          bank       TYPE REF TO lcl_bank,
+          result     TYPE REF TO lcl_money,
+          sum        TYPE REF TO lif_expression.
+
+    five_bucks = lcl_money=>dollar( 5 ).
+    ten_francs = lcl_money=>franc( 10 ).
+    bank = NEW lcl_bank( ).
+    bank->add_rate( i_from = `CHF` i_to = `USD` i_rate = 2 ).
+    sum = NEW lcl_sum( i_augend = five_bucks i_addend = ten_francs )->times( 2 ).
+    result = bank->reduce( i_source = sum i_to = `USD` ).
+    assert_equals( i_exp = lcl_money=>dollar( 20 ) i_act = result ).
   ENDMETHOD.
 ENDCLASS.

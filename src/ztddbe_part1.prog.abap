@@ -118,11 +118,11 @@ CLASS lcl_sum IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD lif_expression~plus.
-    CLEAR r_value.
+    r_value = NEW lcl_sum( i_augend = me i_addend = i_addend ).
   ENDMETHOD.
 
   METHOD lif_expression~times.
-    CLEAR r_value.
+    r_value = NEW lcl_sum( i_augend = augend->times( i_multiplier ) i_addend = addend->times( i_multiplier ) ).
   ENDMETHOD.
 ENDCLASS.
 
