@@ -33,8 +33,27 @@ CLASS lcl_object IMPLEMENTATION.
   ENDMETHOD.
 ENDCLASS.
 
-CLASS lcl_dollar DEFINITION
+CLASS lcl_money DEFINITION
       INHERITING FROM lcl_object.
+  PUBLIC SECTION.
+    METHODS:
+      equals REDEFINITION.
+  PROTECTED SECTION.
+    DATA: amount TYPE i.
+ENDCLASS.
+
+CLASS lcl_money IMPLEMENTATION.
+  METHOD equals.
+    DATA: money TYPE REF TO lcl_money.
+    money ?= i_obj.
+    IF ( me->amount = money->amount ).
+      r_result = abap_true.
+    ENDIF.
+  ENDMETHOD.
+ENDCLASS.
+
+CLASS lcl_dollar DEFINITION
+      INHERITING FROM lcl_money.
   PUBLIC SECTION.
     METHODS:
       constructor
@@ -42,12 +61,7 @@ CLASS lcl_dollar DEFINITION
           i_amount TYPE i,
 
       times IMPORTING i_multiplier   TYPE i
-            RETURNING VALUE(r_value) TYPE REF TO lcl_dollar,
-
-      equals REDEFINITION.
-
-  PRIVATE SECTION.
-    DATA: amount TYPE i.
+            RETURNING VALUE(r_value) TYPE REF TO lcl_dollar.
 ENDCLASS.
 
 CLASS lcl_dollar IMPLEMENTATION.
@@ -59,18 +73,10 @@ CLASS lcl_dollar IMPLEMENTATION.
   METHOD times.
     r_value = NEW lcl_dollar( amount * i_multiplier ).
   ENDMETHOD.
-
-  METHOD equals.
-    DATA: dollar TYPE REF TO lcl_dollar.
-    dollar ?= i_obj.
-    IF ( me->amount = dollar->amount ).
-      r_result = abap_true.
-    ENDIF.
-  ENDMETHOD.
 ENDCLASS.
 
 CLASS lcl_franc DEFINITION
-      INHERITING FROM lcl_object.
+      INHERITING FROM lcl_money.
   PUBLIC SECTION.
     METHODS:
       constructor
@@ -78,12 +84,7 @@ CLASS lcl_franc DEFINITION
           i_amount TYPE i,
 
       times IMPORTING i_multiplier   TYPE i
-            RETURNING VALUE(r_value) TYPE REF TO lcl_franc,
-
-      equals REDEFINITION.
-
-  PRIVATE SECTION.
-    DATA: amount TYPE i.
+            RETURNING VALUE(r_value) TYPE REF TO lcl_franc.
 ENDCLASS.
 
 CLASS lcl_franc IMPLEMENTATION.
@@ -94,14 +95,6 @@ CLASS lcl_franc IMPLEMENTATION.
 
   METHOD times.
     r_value = NEW lcl_franc( amount * i_multiplier ).
-  ENDMETHOD.
-
-  METHOD equals.
-    DATA: franc TYPE REF TO lcl_franc.
-    franc ?= i_obj.
-    IF ( me->amount = franc->amount ).
-      r_result = abap_true.
-    ENDIF.
   ENDMETHOD.
 ENDCLASS.
 

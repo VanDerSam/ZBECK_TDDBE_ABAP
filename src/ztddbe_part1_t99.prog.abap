@@ -71,6 +71,8 @@ CLASS ltc_test_multycurrency_money IMPLEMENTATION.
   METHOD test_equality.
     cl_abap_unit_assert=>assert_true( NEW lcl_dollar( 5 )->equals( NEW lcl_dollar( 5 ) ) ).
     cl_abap_unit_assert=>assert_false( NEW lcl_dollar( 5 )->equals( NEW lcl_dollar( 6 ) ) ).
+    cl_abap_unit_assert=>assert_true( NEW lcl_franc( 5 )->equals( NEW lcl_franc( 5 ) ) ).
+    cl_abap_unit_assert=>assert_false( NEW lcl_franc( 5 )->equals( NEW lcl_franc( 6 ) ) ).
   ENDMETHOD.
 
   METHOD test_franc_multiplication.
