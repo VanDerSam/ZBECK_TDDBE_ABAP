@@ -51,7 +51,8 @@ CLASS ltc_test_multycurrency_money DEFINITION
                     RETURNING VALUE(r_result) TYPE abap_bool,
       ""
       test_multiplication FOR TESTING,
-      test_equality FOR TESTING.
+      test_equality FOR TESTING,
+      test_franc_multiplication FOR TESTING.
 ENDCLASS.
 
 CLASS ltc_test_multycurrency_money IMPLEMENTATION.
@@ -70,5 +71,13 @@ CLASS ltc_test_multycurrency_money IMPLEMENTATION.
   METHOD test_equality.
     cl_abap_unit_assert=>assert_true( NEW lcl_dollar( 5 )->equals( NEW lcl_dollar( 5 ) ) ).
     cl_abap_unit_assert=>assert_false( NEW lcl_dollar( 5 )->equals( NEW lcl_dollar( 6 ) ) ).
+  ENDMETHOD.
+
+  METHOD test_franc_multiplication.
+    DATA: five TYPE REF TO lcl_franc.
+
+    five = NEW lcl_franc( 5 ).
+    assert_equals( i_exp = NEW lcl_franc( 10 ) i_act = five->times( 2 ) ).
+    assert_equals( i_exp = NEW lcl_franc( 15 ) i_act = five->times( 3 ) ).
   ENDMETHOD.
 ENDCLASS.

@@ -69,4 +69,40 @@ CLASS lcl_dollar IMPLEMENTATION.
   ENDMETHOD.
 ENDCLASS.
 
+CLASS lcl_franc DEFINITION
+      INHERITING FROM lcl_object.
+  PUBLIC SECTION.
+    METHODS:
+      constructor
+        IMPORTING
+          i_amount TYPE i,
+
+      times IMPORTING i_multiplier   TYPE i
+            RETURNING VALUE(r_value) TYPE REF TO lcl_franc,
+
+      equals REDEFINITION.
+
+  PRIVATE SECTION.
+    DATA: amount TYPE i.
+ENDCLASS.
+
+CLASS lcl_franc IMPLEMENTATION.
+  METHOD constructor.
+    super->constructor( ).
+    amount = i_amount.
+  ENDMETHOD.
+
+  METHOD times.
+    r_value = NEW lcl_franc( amount * i_multiplier ).
+  ENDMETHOD.
+
+  METHOD equals.
+    DATA: franc TYPE REF TO lcl_franc.
+    franc ?= i_obj.
+    IF ( me->amount = franc->amount ).
+      r_result = abap_true.
+    ENDIF.
+  ENDMETHOD.
+ENDCLASS.
+
 INCLUDE ztddbe_part1_t99.
