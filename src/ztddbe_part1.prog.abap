@@ -49,15 +49,24 @@ CLASS lcl_money DEFINITION
              RETURNING VALUE(r_value) TYPE REF TO lcl_money,
 
       franc IMPORTING i_amount       TYPE i
-             RETURNING VALUE(r_value) TYPE REF TO lcl_money.
+            RETURNING VALUE(r_value) TYPE REF TO lcl_money.
     METHODS:
+      constructor
+        IMPORTING i_amount   TYPE i
+                  i_currency TYPE string,
+
       equals REDEFINITION,
 
-      times ABSTRACT IMPORTING i_multiplier TYPE i
-                     RETURNING VALUE(r_value) TYPE REF TO lcl_money.
+      times ABSTRACT
+        IMPORTING i_multiplier   TYPE i
+        RETURNING VALUE(r_value) TYPE REF TO lcl_money,
+
+      get_currency
+        RETURNING VALUE(r_currency) TYPE string.
 
   PROTECTED SECTION.
-    DATA: amount TYPE i.
+    DATA: amount   TYPE i,
+          currency TYPE string.
 ENDCLASS.
 
 CLASS lcl_dollar DEFINITION
@@ -65,8 +74,8 @@ CLASS lcl_dollar DEFINITION
   PUBLIC SECTION.
     METHODS:
       constructor
-        IMPORTING
-          i_amount TYPE i,
+        IMPORTING i_amount   TYPE i
+                  i_currency TYPE string,
 
       times REDEFINITION.
 ENDCLASS.
@@ -76,13 +85,19 @@ CLASS lcl_franc DEFINITION
   PUBLIC SECTION.
     METHODS:
       constructor
-        IMPORTING
-          i_amount TYPE i,
+        IMPORTING i_amount   TYPE i
+                  i_currency TYPE string,
 
       times REDEFINITION.
 ENDCLASS.
 
 CLASS lcl_money IMPLEMENTATION.
+  METHOD constructor.
+    super->constructor( ).
+    amount = i_amount.
+    currency = i_currency.
+  ENDMETHOD.
+
   METHOD equals.
     DATA: money TYPE REF TO lcl_money.
     money ?= i_obj.
@@ -92,33 +107,35 @@ CLASS lcl_money IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD dollar.
-    r_value = NEW lcl_dollar( i_amount ).
+    r_value = NEW lcl_dollar( i_amount = i_amount i_currency = `USD` ).
   ENDMETHOD.
 
   METHOD franc.
-    r_value = NEW lcl_franc( i_amount ).
+    r_value = NEW lcl_franc( i_amount = i_amount i_currency = `CHF` ).
+  ENDMETHOD.
+
+  METHOD get_currency.
+    r_currency = currency.
   ENDMETHOD.
 ENDCLASS.
 
 CLASS lcl_dollar IMPLEMENTATION.
   METHOD constructor.
-    super->constructor( ).
-    amount = i_amount.
+    super->constructor( i_amount = i_amount i_currency = i_currency ).
   ENDMETHOD.
 
   METHOD times.
-    r_value = NEW lcl_dollar( amount * i_multiplier ).
+    r_value = lcl_money=>dollar( amount * i_multiplier ).
   ENDMETHOD.
 ENDCLASS.
 
 CLASS lcl_franc IMPLEMENTATION.
   METHOD constructor.
-    super->constructor( ).
-    amount = i_amount.
+    super->constructor( i_amount = i_amount i_currency = i_currency ).
   ENDMETHOD.
 
   METHOD times.
-    r_value = NEW lcl_franc( amount * i_multiplier ).
+    r_value = lcl_money=>franc( amount * i_multiplier ).
   ENDMETHOD.
 ENDCLASS.
 

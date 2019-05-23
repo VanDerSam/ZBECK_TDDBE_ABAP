@@ -60,7 +60,8 @@ CLASS ltc_test_multycurrency_money DEFINITION
       ""
       test_multiplication FOR TESTING,
       test_equality FOR TESTING,
-      test_franc_multiplication FOR TESTING.
+      test_franc_multiplication FOR TESTING,
+      test_currency for testing.
 ENDCLASS.
 
 CLASS ltc_test_multycurrency_money IMPLEMENTATION.
@@ -85,10 +86,15 @@ CLASS ltc_test_multycurrency_money IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD test_franc_multiplication.
-    DATA: five TYPE REF TO lcl_franc.
+    DATA: five TYPE REF TO lcl_money.
 
-    five = NEW lcl_franc( 5 ).
+    five = lcl_money=>franc( 5 ).
     assert_equals( i_exp = lcl_money=>franc( 10 ) i_act = five->times( 2 ) ).
     assert_equals( i_exp = lcl_money=>franc( 15 ) i_act = five->times( 3 ) ).
+  ENDMETHOD.
+
+  METHOD test_currency.
+    cl_abap_unit_assert=>assert_equals( exp = 'USD' act = lcl_money=>dollar( 1 )->get_currency( ) ).
+    cl_abap_unit_assert=>assert_equals( exp = 'CHF' act = lcl_money=>franc( 1 )->get_currency( ) ).
   ENDMETHOD.
 ENDCLASS.
