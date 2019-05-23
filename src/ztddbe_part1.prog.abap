@@ -41,22 +41,23 @@ CLASS lcl_object IMPLEMENTATION.
 ENDCLASS.
 
 CLASS lcl_money DEFINITION
-      INHERITING FROM lcl_object.
+      INHERITING FROM lcl_object
+      ABSTRACT.
   PUBLIC SECTION.
+    CLASS-METHODS:
+      dollar IMPORTING i_amount       TYPE i
+             RETURNING VALUE(r_value) TYPE REF TO lcl_money,
+
+      franc IMPORTING i_amount       TYPE i
+             RETURNING VALUE(r_value) TYPE REF TO lcl_money.
     METHODS:
-      equals REDEFINITION.
+      equals REDEFINITION,
+
+      times ABSTRACT IMPORTING i_multiplier TYPE i
+                     RETURNING VALUE(r_value) TYPE REF TO lcl_money.
+
   PROTECTED SECTION.
     DATA: amount TYPE i.
-ENDCLASS.
-
-CLASS lcl_money IMPLEMENTATION.
-  METHOD equals.
-    DATA: money TYPE REF TO lcl_money.
-    money ?= i_obj.
-    IF ( me->amount = money->amount AND me->get_class( )->absolute_name = money->get_class( )->absolute_name ).
-      r_result = abap_true.
-    ENDIF.
-  ENDMETHOD.
 ENDCLASS.
 
 CLASS lcl_dollar DEFINITION
@@ -67,8 +68,36 @@ CLASS lcl_dollar DEFINITION
         IMPORTING
           i_amount TYPE i,
 
-      times IMPORTING i_multiplier   TYPE i
-            RETURNING VALUE(r_value) TYPE REF TO lcl_dollar.
+      times REDEFINITION.
+ENDCLASS.
+
+CLASS lcl_franc DEFINITION
+      INHERITING FROM lcl_money.
+  PUBLIC SECTION.
+    METHODS:
+      constructor
+        IMPORTING
+          i_amount TYPE i,
+
+      times REDEFINITION.
+ENDCLASS.
+
+CLASS lcl_money IMPLEMENTATION.
+  METHOD equals.
+    DATA: money TYPE REF TO lcl_money.
+    money ?= i_obj.
+    IF ( me->amount = money->amount AND me->get_class( )->absolute_name = money->get_class( )->absolute_name ).
+      r_result = abap_true.
+    ENDIF.
+  ENDMETHOD.
+
+  METHOD dollar.
+    r_value = NEW lcl_dollar( i_amount ).
+  ENDMETHOD.
+
+  METHOD franc.
+    r_value = NEW lcl_franc( i_amount ).
+  ENDMETHOD.
 ENDCLASS.
 
 CLASS lcl_dollar IMPLEMENTATION.
@@ -80,18 +109,6 @@ CLASS lcl_dollar IMPLEMENTATION.
   METHOD times.
     r_value = NEW lcl_dollar( amount * i_multiplier ).
   ENDMETHOD.
-ENDCLASS.
-
-CLASS lcl_franc DEFINITION
-      INHERITING FROM lcl_money.
-  PUBLIC SECTION.
-    METHODS:
-      constructor
-        IMPORTING
-          i_amount TYPE i,
-
-      times IMPORTING i_multiplier   TYPE i
-            RETURNING VALUE(r_value) TYPE REF TO lcl_franc.
 ENDCLASS.
 
 CLASS lcl_franc IMPLEMENTATION.

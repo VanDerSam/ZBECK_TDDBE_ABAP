@@ -69,26 +69,26 @@ CLASS ltc_test_multycurrency_money IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD test_multiplication.
-    DATA: five    TYPE REF TO lcl_dollar.
+    DATA: five TYPE REF TO lcl_money.
 
-    five = NEW lcl_dollar( 5 ).
-    assert_equals( i_exp = NEW lcl_dollar( 10 ) i_act = five->times( 2 ) ).
-    assert_equals( i_exp = NEW lcl_dollar( 15 ) i_act = five->times( 3 ) ).
+    five = lcl_money=>dollar( 5 ).
+    assert_equals( i_exp = lcl_money=>dollar( 10 ) i_act = five->times( 2 ) ).
+    assert_equals( i_exp = lcl_money=>dollar( 15 ) i_act = five->times( 3 ) ).
   ENDMETHOD.
 
   METHOD test_equality.
-    cl_abap_unit_assert=>assert_true( NEW lcl_dollar( 5 )->equals( NEW lcl_dollar( 5 ) ) ).
-    cl_abap_unit_assert=>assert_false( NEW lcl_dollar( 5 )->equals( NEW lcl_dollar( 6 ) ) ).
-    cl_abap_unit_assert=>assert_true( NEW lcl_franc( 5 )->equals( NEW lcl_franc( 5 ) ) ).
-    cl_abap_unit_assert=>assert_false( NEW lcl_franc( 5 )->equals( NEW lcl_franc( 6 ) ) ).
-    cl_abap_unit_assert=>assert_false( NEW lcl_franc( 5 )->equals( NEW lcl_dollar( 5 ) ) ).
+    cl_abap_unit_assert=>assert_true( lcl_money=>dollar( 5 )->equals( lcl_money=>dollar( 5 ) ) ).
+    cl_abap_unit_assert=>assert_false( lcl_money=>dollar( 5 )->equals( lcl_money=>dollar( 6 ) ) ).
+    cl_abap_unit_assert=>assert_true( lcl_money=>franc( 5 )->equals( lcl_money=>franc( 5 ) ) ).
+    cl_abap_unit_assert=>assert_false( lcl_money=>franc( 5 )->equals( lcl_money=>franc( 6 ) ) ).
+    cl_abap_unit_assert=>assert_false( lcl_money=>franc( 5 )->equals( lcl_money=>dollar( 5 ) ) ).
   ENDMETHOD.
 
   METHOD test_franc_multiplication.
     DATA: five TYPE REF TO lcl_franc.
 
     five = NEW lcl_franc( 5 ).
-    assert_equals( i_exp = NEW lcl_franc( 10 ) i_act = five->times( 2 ) ).
-    assert_equals( i_exp = NEW lcl_franc( 15 ) i_act = five->times( 3 ) ).
+    assert_equals( i_exp = lcl_money=>franc( 10 ) i_act = five->times( 2 ) ).
+    assert_equals( i_exp = lcl_money=>franc( 15 ) i_act = five->times( 3 ) ).
   ENDMETHOD.
 ENDCLASS.
