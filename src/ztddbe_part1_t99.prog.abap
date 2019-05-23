@@ -61,7 +61,8 @@ CLASS ltc_test_multycurrency_money DEFINITION
       test_multiplication FOR TESTING,
       test_equality FOR TESTING,
       test_franc_multiplication FOR TESTING,
-      test_currency FOR TESTING.
+      test_currency FOR TESTING,
+      test_simple_addition FOR TESTING.
 ENDCLASS.
 
 CLASS ltc_test_multycurrency_money IMPLEMENTATION.
@@ -94,5 +95,18 @@ CLASS ltc_test_multycurrency_money IMPLEMENTATION.
   METHOD test_currency.
     cl_abap_unit_assert=>assert_equals( exp = 'USD' act = lcl_money=>dollar( 1 )->get_currency( ) ).
     cl_abap_unit_assert=>assert_equals( exp = 'CHF' act = lcl_money=>franc( 1 )->get_currency( ) ).
+  ENDMETHOD.
+
+  METHOD test_simple_addition.
+    DATA: five    TYPE REF TO lcl_money,
+          sum     TYPE REF TO lif_expression,
+          bank    TYPE REF TO lcl_bank,
+          reduced TYPE REF TO lcl_money.
+
+    five = lcl_money=>dollar( 5 ).
+    sum = five->plus( five ).
+    bank = NEW lcl_bank( ).
+    reduced = bank->reduce( i_source = sum i_to = `USD` ).
+    assert_equals( i_exp = lcl_money=>dollar( 10 ) i_act = reduced ).
   ENDMETHOD.
 ENDCLASS.

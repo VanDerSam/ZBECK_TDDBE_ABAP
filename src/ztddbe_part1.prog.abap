@@ -40,9 +40,24 @@ CLASS lcl_object IMPLEMENTATION.
   ENDMETHOD.
 ENDCLASS.
 
+INTERFACE lif_expression.
+ENDINTERFACE.
+
+CLASS lcl_money DEFINITION DEFERRED.
+
+CLASS lcl_bank DEFINITION.
+  PUBLIC SECTION.
+    METHODS:
+      reduce IMPORTING i_source       TYPE REF TO lif_expression
+                       i_to           TYPE string
+             RETURNING VALUE(r_value) TYPE REF TO lcl_money.
+ENDCLASS.
+
 CLASS lcl_money DEFINITION
       INHERITING FROM lcl_object.
   PUBLIC SECTION.
+    INTERFACES: lif_expression.
+
     CLASS-METHODS:
       dollar IMPORTING i_amount       TYPE i
              RETURNING VALUE(r_value) TYPE REF TO lcl_money,
@@ -61,7 +76,10 @@ CLASS lcl_money DEFINITION
         RETURNING VALUE(r_value) TYPE REF TO lcl_money,
 
       get_currency
-        RETURNING VALUE(r_currency) TYPE string.
+        RETURNING VALUE(r_currency) TYPE string,
+
+      plus IMPORTING i_addend       TYPE REF TO lcl_money
+           RETURNING VALUE(r_value) TYPE REF TO lif_expression.
 
   PROTECTED SECTION.
     DATA: amount   TYPE i,
@@ -97,6 +115,16 @@ CLASS lcl_money IMPLEMENTATION.
 
   METHOD times.
     r_value = NEW lcl_money( i_amount = amount * i_multiplier i_currency = currency ).
+  ENDMETHOD.
+
+  METHOD plus.
+    r_value = NEW lcl_money( i_amount = amount + i_addend->amount i_currency = currency ).
+  ENDMETHOD.
+ENDCLASS.
+
+CLASS lcl_bank IMPLEMENTATION.
+  METHOD reduce.
+    r_value = lcl_money=>dollar( 10 ).
   ENDMETHOD.
 ENDCLASS.
 
