@@ -41,8 +41,7 @@ CLASS lcl_object IMPLEMENTATION.
 ENDCLASS.
 
 CLASS lcl_money DEFINITION
-      INHERITING FROM lcl_object
-      ABSTRACT.
+      INHERITING FROM lcl_object.
   PUBLIC SECTION.
     CLASS-METHODS:
       dollar IMPORTING i_amount       TYPE i
@@ -57,7 +56,7 @@ CLASS lcl_money DEFINITION
 
       equals REDEFINITION,
 
-      times ABSTRACT
+      times
         IMPORTING i_multiplier   TYPE i
         RETURNING VALUE(r_value) TYPE REF TO lcl_money,
 
@@ -101,7 +100,7 @@ CLASS lcl_money IMPLEMENTATION.
   METHOD equals.
     DATA: money TYPE REF TO lcl_money.
     money ?= i_obj.
-    IF ( me->amount = money->amount AND me->get_class( )->absolute_name = money->get_class( )->absolute_name ).
+    IF ( me->amount = money->amount AND me->get_currency( ) = money->get_currency( ) ).
       r_result = abap_true.
     ENDIF.
   ENDMETHOD.
@@ -117,6 +116,10 @@ CLASS lcl_money IMPLEMENTATION.
   METHOD get_currency.
     r_currency = currency.
   ENDMETHOD.
+
+  METHOD times.
+    r_value = NEW lcl_money( i_amount = amount * i_multiplier i_currency = currency ).
+  ENDMETHOD.
 ENDCLASS.
 
 CLASS lcl_dollar IMPLEMENTATION.
@@ -125,7 +128,7 @@ CLASS lcl_dollar IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD times.
-    r_value = lcl_money=>dollar( amount * i_multiplier ).
+    r_value = NEW lcl_money( i_amount = amount * i_multiplier i_currency = currency ).
   ENDMETHOD.
 ENDCLASS.
 
@@ -135,7 +138,7 @@ CLASS lcl_franc IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD times.
-    r_value = lcl_money=>franc( amount * i_multiplier ).
+    r_value = NEW lcl_money( i_amount = amount * i_multiplier i_currency = currency ).
   ENDMETHOD.
 ENDCLASS.
 

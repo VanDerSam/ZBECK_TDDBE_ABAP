@@ -8,7 +8,7 @@ CLASS ltc_test_object_class DEFINITION
       test_to_string_works FOR TESTING,
       test_hash_code_works FOR TESTING,
       test_equals_works FOR TESTING,
-      test_get_class_works for testing.
+      test_get_class_works FOR TESTING.
 ENDCLASS.
 
 CLASS ltc_test_object_class IMPLEMENTATION.
@@ -61,7 +61,8 @@ CLASS ltc_test_multycurrency_money DEFINITION
       test_multiplication FOR TESTING,
       test_equality FOR TESTING,
       test_franc_multiplication FOR TESTING,
-      test_currency for testing.
+      test_currency FOR TESTING,
+      test_different_class_equality FOR TESTING.
 ENDCLASS.
 
 CLASS ltc_test_multycurrency_money IMPLEMENTATION.
@@ -96,5 +97,9 @@ CLASS ltc_test_multycurrency_money IMPLEMENTATION.
   METHOD test_currency.
     cl_abap_unit_assert=>assert_equals( exp = 'USD' act = lcl_money=>dollar( 1 )->get_currency( ) ).
     cl_abap_unit_assert=>assert_equals( exp = 'CHF' act = lcl_money=>franc( 1 )->get_currency( ) ).
+  ENDMETHOD.
+
+  METHOD test_different_class_equality.
+    assert_equals( i_exp = NEW lcl_money( i_amount = 10 i_currency = `CHF` ) i_act = NEW lcl_franc( i_amount = 10 i_currency = `CHF` ) ).
   ENDMETHOD.
 ENDCLASS.
