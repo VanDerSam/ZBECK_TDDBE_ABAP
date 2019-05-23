@@ -7,7 +7,8 @@ CLASS ltc_test_object_class DEFINITION
     METHODS:
       test_to_string_works FOR TESTING,
       test_hash_code_works FOR TESTING,
-      test_equals_workds FOR TESTING.
+      test_equals_works FOR TESTING,
+      test_get_class_works for testing.
 ENDCLASS.
 
 CLASS ltc_test_object_class IMPLEMENTATION.
@@ -31,11 +32,18 @@ CLASS ltc_test_object_class IMPLEMENTATION.
     cl_abap_unit_assert=>assert_differs( exp = code act = simple_object->hash_code( ) ).
   ENDMETHOD.
 
-  METHOD test_equals_workds.
+  METHOD test_equals_works.
     DATA: simple_object TYPE REF TO lcl_object.
 
     simple_object = NEW lcl_object( ).
     cl_abap_unit_assert=>assert_true( boolc( simple_object->equals( simple_object ) ) ).
+  ENDMETHOD.
+
+  METHOD test_get_class_works.
+    DATA: simple_object TYPE REF TO lcl_object.
+
+    simple_object = NEW lcl_object( ).
+    cl_abap_unit_assert=>assert_true( boolc( simple_object->get_class( )->absolute_name CS 'CLASS=LCL_OBJECT' ) ).
   ENDMETHOD.
 ENDCLASS.
 
@@ -73,6 +81,7 @@ CLASS ltc_test_multycurrency_money IMPLEMENTATION.
     cl_abap_unit_assert=>assert_false( NEW lcl_dollar( 5 )->equals( NEW lcl_dollar( 6 ) ) ).
     cl_abap_unit_assert=>assert_true( NEW lcl_franc( 5 )->equals( NEW lcl_franc( 5 ) ) ).
     cl_abap_unit_assert=>assert_false( NEW lcl_franc( 5 )->equals( NEW lcl_franc( 6 ) ) ).
+    cl_abap_unit_assert=>assert_false( NEW lcl_franc( 5 )->equals( NEW lcl_dollar( 5 ) ) ).
   ENDMETHOD.
 
   METHOD test_franc_multiplication.

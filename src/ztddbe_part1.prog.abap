@@ -11,7 +11,10 @@ CLASS lcl_object DEFINITION.
 
       equals
         IMPORTING i_obj           TYPE REF TO lcl_object
-        RETURNING VALUE(r_result) TYPE abap_bool.
+        RETURNING VALUE(r_result) TYPE abap_bool,
+
+      get_class
+        RETURNING VALUE(r_class_descr) TYPE REF TO cl_abap_classdescr.
 ENDCLASS.
 
 CLASS lcl_object IMPLEMENTATION.
@@ -31,6 +34,10 @@ CLASS lcl_object IMPLEMENTATION.
   METHOD equals.
     r_result = boolc( me = i_obj ).
   ENDMETHOD.
+
+  METHOD get_class.
+    r_class_descr ?= cl_abap_classdescr=>describe_by_object_ref( me ).
+  ENDMETHOD.
 ENDCLASS.
 
 CLASS lcl_money DEFINITION
@@ -46,7 +53,7 @@ CLASS lcl_money IMPLEMENTATION.
   METHOD equals.
     DATA: money TYPE REF TO lcl_money.
     money ?= i_obj.
-    IF ( me->amount = money->amount ).
+    IF ( me->amount = money->amount AND me->get_class( )->absolute_name = money->get_class( )->absolute_name ).
       r_result = abap_true.
     ENDIF.
   ENDMETHOD.
